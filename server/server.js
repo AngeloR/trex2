@@ -1,6 +1,5 @@
-_ = require('underscore');
-
 var config = require('./config'),
+    _ =require('underscore'),
     redis = require('redis').createClient(),
     app = require('express')(),
     request = require('request'),
@@ -10,6 +9,13 @@ var config = require('./config'),
 var named_outline = require('./lib/named_outline.js').init({
     redis: redis
 });
+
+// this is what actually handles our OPML parsing 
+var opml = require('./lib/opml.js').init({
+
+});
+
+// watch for certain opml triggers
 
 app.get('/invalidate/:name', function(req, res) {
     console.log('Invalidate cache for ' + req.params.name);
@@ -40,7 +46,8 @@ app.get('/*', function(req, res, next) {
     named_outline.exists(name, function(url) {
         if(url) {
             var file = fs.readFileSync('./cache/' + name + '.opml'); 
-            res.send(file.toString());
+            opml.parse_document(file);
+
         }
         else {
             console.log('Named outline for ' + name + ' does not exist');

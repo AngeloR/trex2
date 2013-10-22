@@ -1,15 +1,19 @@
 var _ = require('underscore'),
-    xmldoc = require('xmldoc');
+    xmldoc = require('xml2js').parseString;
 
 var opml = {
-    regex: {
-        BODY: '<body>(.?)*</body>',
-        HEAD: '<head>(.?)*</head>'
-    },
     parse_document: function(opml) {
-        var head = opml.match(opml.regex.HEAD)[0];
-        var doc = new xmldoc.XmlDocument(head);
-        console.log(doc.toString());
+        xmldoc(opml, function(err, result) {
+            result = result.opml;
+            var headers = result.head[0],
+                body = result.body;
+            
+            console.log(headers);
+        });
+    },
+    init: function(deps) {
+       // we don't have any deps right now 
+       return opml;
     }
 };
 

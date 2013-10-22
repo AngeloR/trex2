@@ -7,6 +7,6 @@
        "express": "*",
        "winston": "*",
        "redis": "*",
-       "xmldoc": "*"
+       "xml2js": "*"
    }
 }
