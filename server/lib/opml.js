@@ -3,8 +3,7 @@ var _ = require('underscore'),
     verbs = require('./verbs'),
     utils = require('./utils');
 
-var level = 0,
-    tmpLevel = undefined;
+var list_mode = false;
 
 var html = {
     head: [],
@@ -31,6 +30,7 @@ var opml = {
         }
         _.each(body, function(node) {
             if(verbs.is_valid(node['$'].text)) {
+                console.log('verb parsing: ' + node['$'].text);
                 html = verbs.handle(node, html);
             }
             else {
@@ -43,18 +43,25 @@ var opml = {
                     }
                     else {
                         if(!_.isUndefined(node['$'].isFeedItem)) {
-                            html.body.push('<h1>' + node['$'].text + '</h1>');
+                            html.body.push('<div class="post"><h1>' + node['$'].text + '</h1>');
                         }
                         else {
                         }
+                        html.body.push('<div>');
                         html = opml.parse_body(node.outline, indent + 1);
+                        html.body.push('</div>');
+                        if(!_.isUndefined(node['$'].isFeedItem)) {
+                            html.body.push('</div>');
+                        }
                     }
                 }
                 else {
+                    var s = '';
                     // no children in this node
                     if(indent < 1 || indent > 2)  {
-                        html.body.push('<div>' + node['$'].text + '</div>');
+                        s = '<p>' + node['$'].text + '</p>';
                     }
+                    html.body.push(s);
                 }
             }
         });

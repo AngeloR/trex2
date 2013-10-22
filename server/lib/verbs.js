@@ -1,26 +1,24 @@
 var _ = require('underscore');
 
 var verbs = {
-    registered: [
-        '#text'
-    ],
     is_valid: function(string) {
         string = string.split(' ');
-        if(verbs.registered.indexOf(string[0]) >= 0) {
+        if(!_.isUndefined(verbs.verb_handlers[string[0]])) {
             return true;
         }
         return false;
     },
-    handle: function(obj, htmlObj) {
-        var text = obj['$'].text;
-        text = text.split(' ');
-        var verb = text.shift();
-        text = text.join(' ');
+    handle: function(node, htmlObj) {
+        var verb = node['$'].text.split(' ')[0];
 
-        return verbs.verb_handlers[verb](text, htmlObj);
+        return verbs.verb_handlers[verb](node, htmlObj);
     },
     verb_handlers: {
-        '#text': require('../verbs/text') 
+        '#text': require('../verbs/text'),
+        '#domain': require('../verbs/blank'),
+        '#glossary': require('../verbs/blank.js'),
+        '#menus': require('../verbs/blank.js'),
+        '#templates': require('../verbs/blank.js')
     }
 };
 
