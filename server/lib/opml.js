@@ -42,14 +42,41 @@ var opml = {
                         html = opml.parse_body(node.outline, indent + 1);
                     }
                     else {
-                        if(!_.isUndefined(node['$'].isFeedItem)) {
+                        var feed_item_mode = !_.isUndefined(node.$.isFeedItem);
+                        if(feed_item_mode) {
                             html.body.push('<div class="post"><h1>' + node['$'].text + '</h1>');
                         }
-                        else {
+
+                        if(indent == 4) {
+                            list_mode = true;
                         }
-                        html.body.push('<div>');
+
+                        if(!feed_item_mode) {
+                            if(list_mode) {
+                                html.body.push('<p>' + node.$.text+'</p>');
+                                html.body.push('<ul>');
+                            }
+                            else {
+                                html.body.push('<div>');
+                                html.body.push('<p>' + node.$.text+'</p>');
+                            }
+                        }
+
                         html = opml.parse_body(node.outline, indent + 1);
-                        html.body.push('</div>');
+                       
+                        if(!feed_item_mode) {
+                            if(list_mode) {
+                                html.body.push('</ul>');
+                            }
+                            else {
+                                html.body.push('</div>');
+                            }
+                        }
+
+                        if(indent == 4) {
+                            list_mode = false;
+                        }
+                        
                         if(!_.isUndefined(node['$'].isFeedItem)) {
                             html.body.push('</div>');
                         }
@@ -59,7 +86,12 @@ var opml = {
                     var s = '';
                     // no children in this node
                     if(indent < 1 || indent > 2)  {
-                        s = '<p>' + node['$'].text + '</p>';
+                        if(indent > 4) {
+                            s = '<li>' + node.$.text + '</li>';
+                        }
+                        else {
+                            s = '<p>' + node['$'].text + '</p>';
+                        }
                     }
                     html.body.push(s);
                 }
