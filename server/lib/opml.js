@@ -77,13 +77,13 @@ var opml = {
                             list_mode = false;
                         }
                         
-                        if(!_.isUndefined(node['$'].isFeedItem)) {
+                        if(feed_item_mode) {
                             html.body.push('</div>');
                         }
                     }
                 }
                 else {
-                    var s = '';
+                    var s;
                     // no children in this node
                     if(indent < 1 || indent > 2)  {
                         if(indent > 4) {
