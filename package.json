@@ -1,0 +1,12 @@
+{
+   "name": "trex2",
+   "description": "OPML rendering server written in nodejs",
+   "dependencies": {
+       "underscore": "*",
+       "request": "*",
+       "express": "*",
+       "winston": "*",
+       "redis": "*",
+       "xmldoc": "*"
+   }
+}
