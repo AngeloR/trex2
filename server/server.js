@@ -3,7 +3,8 @@ var config = require('./config'),
     redis = require('redis').createClient(),
     app = require('express')(),
     request = require('request'),
-    fs = require('fs');
+    fs = require('fs'),
+    tmp = {};
 
 
 var named_outline = require('./lib/named_outline.js').init({
@@ -16,6 +17,9 @@ var opml = require('./lib/opml.js').init({
 });
 
 // watch for certain opml triggers
+opml.watch('headers', function(headers) {
+    tmp.headers = headers; 
+}, this);
 
 app.get('/invalidate/:name', function(req, res) {
     console.log('Invalidate cache for ' + req.params.name);
@@ -41,13 +45,22 @@ app.get('/invalidate/:name', function(req, res) {
 
 // ensure this is a valid named outline
 app.get('/*', function(req, res, next) {
+    // ignore favicon
+    if(req.params[0] == 'favicon.ico') {
+        res.send(404);
+    }
+
     var name = named_outline.get_name_from_host(req.host); 
     console.log('Outline required for ' + name);
     named_outline.exists(name, function(url) {
         if(url) {
+            console.log('Parsing opml');
             var file = fs.readFileSync('./cache/' + name + '.opml'); 
-            opml.parse_document(file);
+            opml.watch('eof', function() {
+                res.send(JSON.stringify(tmp.headers));
+            }, this);
 
+            opml.parse_document(file);
         }
         else {
             console.log('Named outline for ' + name + ' does not exist');
