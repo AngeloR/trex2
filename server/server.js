@@ -1,11 +1,13 @@
 var config = require('./config'),
     _ =require('underscore'),
     redis = require('redis').createClient(),
-    app = require('express')(),
+    express = require('express'),
+    app = express(),
     request = require('request'),
     fs = require('fs'),
     tmp = {};
 
+app.use(express.bodyParser());
 
 var named_outline = require('./lib/named_outline.js').init({
     redis: redis
@@ -21,20 +23,52 @@ opml.watch('headers', function(headers) {
     tmp.headers = headers; 
 }, this);
 
-app.get('/invalidate/:name', function(req, res) {
+app.post('/name-outline', function(req, res) {
+    if(_.isEmpty(req.body.name) || _.isEmpty(req.body.opml)) {
+        res.send(400);
+    }
+
+    named_outline.exists(req.body.name, function(url) {
+        if(url) {
+            res.send(304);
+        }
+        else {
+            named_outline.load(req.body.opml, function(opml) {
+                named_outline.save(req.body.name, opml, function(err) {
+                    if(err) {
+                        res.send(500);    
+                    }
+                    else {
+                        redis.hset('named_outlines',req.body.name, req.body.opml, function(err) {
+                            if(!err) {
+                                res.send(201);
+                            }
+                            else {
+                                console.log(err);
+                                res.send(500);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+    });
+});
+
+app.post('/invalidate/:name', function(req, res) {
     console.log('Invalidate cache for ' + req.params.name);
     named_outline.exists(req.params.name, function(url) {
         if(url) {
             named_outline.load(url, function(opml) {
-                fs.writeFile('./cache/' + req.params.name + '.opml',opml, function(err) {
+                named_outline.save(req.params.name, opml, function(err) {
                     if(err) {
                         console.log(err);
+                        res.send(500);
                     }
                     else {
                         res.send(204);
                     }
                 });
-
             });
         }
         else {

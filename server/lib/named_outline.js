@@ -1,5 +1,6 @@
 var request = require('request'),
-    config = require('../config');
+    config = require('../config'),
+    fs = require('fs');
 
 var named_outline = {
     // parse the host and figure out if a named 
@@ -19,6 +20,11 @@ var named_outline = {
             else {
                 console.log(err);
             }
+        });
+    },
+    save: function(name, opml, cb) {
+        fs.writeFile('./cache/' + name + '.opml', opml, function(err) {
+            cb(err);
         });
     },
     load: function(url, cb) {
