@@ -56,8 +56,12 @@ app.get('/*', function(req, res, next) {
         if(url) {
             console.log('Parsing opml');
             var file = fs.readFileSync('./cache/' + name + '.opml'); 
-            opml.watch('eof', function() {
-                res.send(JSON.stringify(tmp.headers));
+            opml.watch('eof', function(html) {
+                var s = '<html>';
+                s += '<head>' + html.head.join("\r\n") + '</head>';
+                s += '<body>' + html.body.join("\r\n") + '</body>';
+
+                res.send(s);
             }, this);
 
             opml.parse_document(file);
