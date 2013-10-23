@@ -77,7 +77,30 @@ app.post('/invalidate/:name', function(req, res) {
     });
 });
 
-// ensure this is a valid named outline
+// Load a single post for any outline
+app.get('/:year/:month/:postname', function(req, res, next) {
+    var name = named_outline.get_name_from_host(req.host);
+    named_outline.exists(name, function(url) {
+        if(url) {
+            console.log('parsing opml');
+            var file = fs.readFileSync('./cache/' + name + '.opml');
+
+            opml.watch('post', function(node) {
+                console.log('--------------------');
+                console.log(node);
+                console.log('--------------------');
+            });
+
+            opml.parse_document(file);
+        }
+        else {
+            console.log('404 on requested post');
+            res.send('404');
+        }
+    });
+});
+
+// Load the homepage of ANY outline
 app.get('/*', function(req, res, next) {
     // ignore favicon
     if(req.params[0] == 'favicon.ico') {
@@ -89,11 +112,23 @@ app.get('/*', function(req, res, next) {
     named_outline.exists(name, function(url) {
         if(url) {
             console.log('Parsing opml');
-            var file = fs.readFileSync('./cache/' + name + '.opml'); 
+            var file = fs.readFileSync('./cache/' + name + '.opml'),
+                body = '';
+
+            // watch post to get individual post details!
+            opml.watch('post', function(node) {
+                var post = '<div class="post">';
+                post += '<h1>' + node.$.text + '</h1>';
+                post += opml.parse_post(node.outline).join("\r\n");
+                post += '</div>';
+                body += post;
+            });
+
+            // watch end of file to do complete render
             opml.watch('eof', function(html) {
                 var s = '<html>';
                 s += '<head>' + html.head.join("\r\n") + '</head>';
-                s += '<body>' + html.body.join("\r\n") + '</body>';
+                s += '<body>' + body + '</body>';
 
                 res.send(s);
             }, this);
