@@ -1,5 +1,6 @@
 var config = require('./config'),
     _ =require('underscore'),
+    utils = require('./lib/utils'),
     redis = require('redis').createClient(),
     express = require('express'),
     app = express(),
@@ -83,12 +84,25 @@ app.get('/:year/:month/:postname', function(req, res, next) {
     named_outline.exists(name, function(url) {
         if(url) {
             console.log('parsing opml');
-            var file = fs.readFileSync('./cache/' + name + '.opml');
+            var file = fs.readFileSync('./cache/' + name + '.opml'),
+                body = '';
 
             opml.watch('post', function(node) {
-                console.log('--------------------');
-                console.log(node);
-                console.log('--------------------');
+                if(_.isEqual(utils.safen(node.$.text), req.params.postname)) {
+                    var post = '<div class="post">';
+                    post += '<h1>' + node.$.text + '</h1>';
+                    post += opml.parse_post(node.outline).join("\r\n");
+                    post += '</div>';
+                    body = post;
+
+                }
+            });
+
+            opml.watch('eof', function(html) {
+                var s = '<html>';
+                s += '<head>' + html.head.join("\r\n"); + '</head>';
+                s += '<body>' + body + '</body>';
+                res.send(s);
             });
 
             opml.parse_document(file);
@@ -117,8 +131,9 @@ app.get('/*', function(req, res, next) {
 
             // watch post to get individual post details!
             opml.watch('post', function(node) {
+                var d = new Date(node.$.created);
                 var post = '<div class="post">';
-                post += '<h1>' + node.$.text + '</h1>';
+                post += '<h1><a href="/'+d.getFullYear()+'/'+(d.getMonth() + 1) + '/' + utils.safen(node.$.text) +'">' + node.$.text + '<a/></h1>';
                 post += opml.parse_post(node.outline).join("\r\n");
                 post += '</div>';
                 body += post;
