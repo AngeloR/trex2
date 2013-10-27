@@ -5,7 +5,7 @@ var templates = {
     template_list: {},
     load: function(node) {
         _.each(node.outline, function(tNode) {
-            templates.template_list[tNode.$.text] = templates.parse(tNode);
+            templates.template_list[tNode.$.text] = utils.opml.squish(tNode.outline);
         });
     },
     parse: function(node) {
