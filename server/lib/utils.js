@@ -1,3 +1,6 @@
+var _ = require('underscore');
+
+
 var utils = {
     strip: {
         quotes: function(str) {
@@ -38,6 +41,19 @@ var utils = {
             }
         }
         return (s);
+    },
+    opml: {
+        squish: function(node) {
+            var str ='';
+            _.each(node, function(n) {
+                str += n.$.text;
+                if(!_.isUndefined(n.outline)) {
+                    str += utils.opml.squish(n.outline);
+                }
+            });
+
+            return str;
+        }
     }
 };
 

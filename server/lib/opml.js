@@ -13,6 +13,7 @@ var html = {
 
 var opml = {
     events: {},
+    verbs: verbs,
     views: {
         post_title: function(node) {
             var date = new Date(node.$.created);

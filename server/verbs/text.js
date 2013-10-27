@@ -1,7 +1,13 @@
 var utils = require('../lib/utils');
-module.exports = function(node, htmlObj) {
-    string = utils.strip.quotes(node['$'].text); 
-    htmlObj.head.push('<title>' + string + '</title>');
 
-    return htmlObj;
+var text = {
+    title: undefined,
+    handler: function(node, htmlObj) {
+        string = utils.strip.quotes(node['$'].text); 
+        htmlObj.options.title = string;
+
+        return htmlObj;
+    }
 }
+
+module.exports = text;

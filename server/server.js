@@ -3,6 +3,7 @@ var config = require('./config'),
     utils = require('./lib/utils'),
     redis = require('redis').createClient(),
     express = require('express'),
+    bootstrap = require('./lib/bootstrap'),
     app = express(),
     request = require('request'),
     fs = require('fs'),
@@ -15,9 +16,7 @@ var named_outline = require('./lib/named_outline.js').init({
 });
 
 // this is what actually handles our OPML parsing 
-var opml = require('./lib/opml.js').init({
-
-});
+var opml = require('./lib/opml.js').init();
 
 // watch for certain opml triggers
 opml.watch('headers', function(headers) {
@@ -94,7 +93,6 @@ app.get('/:year/:month/:postname', function(req, res, next) {
                     post += opml.parse_post(node.outline).join("\r\n");
                     post += '</div>';
                     body = post;
-
                 }
             });
 
@@ -133,7 +131,7 @@ app.get('/*', function(req, res, next) {
             opml.watch('post', function(node) {
                 var d = new Date(node.$.created);
                 var post = '<div class="post">';
-                post += '<h1><a href="/'+d.getFullYear()+'/'+(d.getMonth() + 1) + '/' + utils.safen(node.$.text) +'">' + node.$.text + '<a/></h1>';
+                post += '<h1><a href="/'+d.getFullYear()+'/'+(d.getMonth() + 1) + '/' + utils.safen(node.$.text) +'">' + node.$.text + '</a></h1>';
                 post += opml.parse_post(node.outline).join("\r\n");
                 post += '</div>';
                 body += post;
@@ -141,11 +139,14 @@ app.get('/*', function(req, res, next) {
 
             // watch end of file to do complete render
             opml.watch('eof', function(html) {
-                var s = '<html>';
-                s += '<head>' + html.head.join("\r\n") + '</head>';
-                s += '<body>' + body + '</body>';
+                console.log('Render with template: ' + html.options.default_template);
+                var template = opml.verbs.verb_handlers['#templates'].template_list[html.options.default_template];
+                template = bootstrap.replace(template);
+                template = template.replace('<%text%>', html.options.title);
+                template = opml.verbs.verb_handlers['#glossary'].replace(template);
+                template = template.replace('<%bodytext%>', body);
 
-                res.send(s);
+                res.send(template);
             }, this);
 
             opml.parse_document(file);

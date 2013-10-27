@@ -1,5 +1,10 @@
 var utils = require('../lib/utils');
-module.exports = function(node, htmlObj) {
-    console.log(node);
-    return htmlObj;
+
+var blank = {
+    handler: function(node, htmlObj) {
+        console.log(node);
+        return htmlObj;
+    }
 }
+
+module.exports = blank;
