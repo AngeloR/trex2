@@ -1,12 +1,15 @@
 {
-   "name": "trex2",
-   "description": "OPML rendering server written in nodejs",
-   "dependencies": {
-       "underscore": "*",
-       "request": "*",
-       "express": "*",
-       "winston": "*",
-       "redis": "*",
-       "xml2js": "*"
-   }
+    "name": "trex2",
+    "description": "OPML rendering server written in nodejs",
+    "dependencies": {
+        "underscore": "*",
+        "request": "*",
+        "express": "*",
+        "winston": "*",
+        "redis": "*",
+        "xml2js": "*"
+    },
+    "scripts": {
+        "start": "node server/server.js"
+    }
 }
